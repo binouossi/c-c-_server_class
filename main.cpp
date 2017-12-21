@@ -6,6 +6,6 @@ using namespace std;
 int main()
 {
     server lui;
-    printf("bonjour");
+//    printf("bonjour");
     return 0;
 }

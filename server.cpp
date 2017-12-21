@@ -1,43 +1,72 @@
 #include "server.h"
 
-server::server()
+int sigflag;
+
+int resquiescat(){wait(NULL);sigflag = 1;}
+
+
+server::server(/*void (communicator)(int)*/)
 {
-    int listenfd = 0,sock = 0;
-    struct sockaddr_in serv_addr;
-    char sendBuff[1025];
-   //      int numrv;
+    int listenfd = 0;
 
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);// creation de la socket serveur
-    printf("socket retrieve success\n");
+      struct sockaddr_in serv_addr;
 
-    memset(&serv_addr, '0', sizeof(serv_addr));
+      sigset(SIGCHLD, (sighandler_t)resquiescat);
 
-    memset(sendBuff, '0', sizeof(sendBuff));
+//      char sendBuff[1025];
+//      int numrv;
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5000);
+      listenfd = socket(AF_INET, SOCK_STREAM, 0);// creation de la socket serveur
+      printf("socket retrieve success\n");
 
-    bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));// on attache la socket a l'address du serveur
 
-    if(listen(listenfd, 10) == -1)
-    {// starting listen
-        printf("Failed to listen\n");
-    }
+      serv_addr.sin_family = AF_INET;
+      serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+      serv_addr.sin_port = htons(PORT);
 
-    while(1)
-    {
-        this->sock = accept(listenfd, (struct sockaddr*)NULL ,NULL); // accept awaiting request
+      if(bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr))<0)
+      {// on attache la socket a l'address du serveur
+          perror("Face_server bind fail");
+      }
 
-        this->communicator();
-        close(this->sock);
-        sleep(1);
-    }
+      if(listen(listenfd, 10) == -1)
+      {// starting listen
+          perror("Failed to listen\n");
+      }
+
+      while(1)
+        {
+          sigflag = 0;
+          int childpid;
+          // accept awaiting request
+          if(this->sock = accept(listenfd, (struct sockaddr*)NULL ,NULL)<0)
+          {
+              if(sigflag == 1)continue;
+              perror("accept error in Face_serverd");
+              exit(-1);
+          }
+
+          if((childpid = fork()) < 0)
+          {
+              perror("fork error in Face_serveurd");
+              exit(-1);
+          }
+          else if (childpid == 0)
+          {
+              close(listenfd);
+//            (*communicator)(this->sock);
+          }
+
+          close(this->sock);
+       }
 }
+
 
 void server::communicator()
 {
-    this->stringsender("Message from server client");
+  //  this->sock = *(int*)socket_desc;
+
+  //  this->stringsender("Message from server client");
 
     this->lire();
 
@@ -45,56 +74,41 @@ void server::communicator()
 
     strcpy(username,this->lu);
 
-    std::cout<<username<<std::strlen(username)<<std::endl;
+  //  this->lire();
 
-    std::cout<<"debut"<<std::endl;
+   // char msg[5]="";
 
-    this->lire();
-   /*  int f=0,g=0;
+    /*while(strcmp("quit",msg)!=0)
+    {*/
+        IplImage *img= this->IplImageRecv();
 
-   this->receive_int(&f);
-   this->receive_int(&g);
+        uid_t id=this->get_id(username);
 
-    std::cout<<f<<std::endl;
-    std::cout<<g<<std::endl;*/
+        int val=this->analyse(id,img);
 
-    char img[strlen(this->lu)];
+//        std::cout<<val<<std::endl;
 
-    std::strcpy(img,this->lu);
+        this->send_int(val);
 
-    std::cout<<img<<std::strlen(img)<<std::endl;
+      //  this->lire();
 
-    std::cout<<"fin"<<std::endl;
+      //  strcpy(msg,this->lu);
+  //  }
 
-
+//    std::cout<<username<<std::strlen(username)<<std::endl;
 
 /*
-    char name[1024];
-//    this->lire(name,1024);
-/*std::cout<<name<<std::endl;
+    cvNamedWindow("Server", CV_WINDOW_AUTOSIZE);
+    cvShowImage("Searver",img);
+    cvWaitKey(3500);
 
-char* gi=name;
-
-//this->viderBuffer();
-
-//std::cout<<gi<<std::endl;
+    cvDestroyWindow("Server");*/
 
 
 
-
-//    uid_t id=this->get_id(name);
-
-    char img[1024];
-    this->lire(img,1024);
-  //  this->viderBuffer();
-    //printf("%d",strlen(img));
-
-
-//    IplImage img=this->IplImageRecv();
- /*   int val=this->analyse(id,&img);
-    this->sender(val);*/
-
- //   free(lui);
+   // std::cout<<"ici"<<std::endl;
+//return;
+    exit(0);
 }
 
 
@@ -113,30 +127,60 @@ int server::stringsender(char fi[])
 }
 
 int server::analyse(uid_t uid, IplImage* im)
-{
-/*    verifier* verif= new verifier(uid);
-   // IplImage im = this->IplImagerecv();
+{/*
+    verifier* verif= new verifier(uid);
+
     int val=verif->verifyFace(im);
-    return val;*/
+
+   /* if(val==0)
+    {
+        val=10;
+    }*/
+
+   // std::cout<<val<<std::endl;
+
+ //   return val;
+
+
 }
 
-
-IplImage server::IplImageRecv()
+IplImage* server::IplImageRecv()
 {
-    cv::Mat  img = cv::Mat::zeros(IMAGE_WIDTH,IMAGE_HEIGHT, CV_8UC3);
-    int  imgSize = img.total()*img.elemSize();
-    uchar sockData[imgSize];
+    int H=0,W=0;
+    this->receive_int(&H);
+ //   this->lire();
+    this->receive_int(&W);
 
-     //Receive data here
-       int bytes;
 
-       for (int i = 0; i < imgSize; i += bytes) {
+//    std::cout<<H<<" et "<<H<<std::endl;
+
+
+    if(W==0)
+        W=IMAGE_WIDTH;
+
+    if(H==0)
+      H=IMAGE_HEIGHT;
+
+  //  cv::Mat  img = cv::Mat::zeros(480,640, CV_8UC3);
+    cv::Mat  img = cv::Mat::zeros(H,W, CV_8UC3);
+
+       int  imgSize = img.total()*img.elemSize();
+       uchar sockData[imgSize];
+
+      //Receive data here
+       int bytes=0;
+
+       for (int i = 0; i < imgSize; i = i + bytes) {
        if ((bytes = recv(this->sock, sockData +i, imgSize  - i, 0)) == -1) {
-      //   quit("recv failed", 1);
+         //quit("recv failed", 1);
+
+           std::cout<<"recv failed"<<std::endl;
+           exit(0);
         }
        }
 
      // Assign pixel value to img
+
 
      int ptr=0;
      for (int i = 0;  i < img.rows; i++) {
@@ -145,53 +189,47 @@ IplImage server::IplImageRecv()
        ptr=ptr+3;
        }
       }
-     IplImage im= img;
 
 
-     cvNamedWindow("Window", CV_WINDOW_AUTOSIZE);
 
-             cvNamedWindow("Window", CV_WINDOW_AUTOSIZE);
-            // cvShowImage("Window",im);
-             cvWaitKey(520);
+
+     IplImage* im= cvCreateImage(cvSize(img.cols, img.rows), 8, 3);
+
+     IplImage tmp=img;
+
+     cvCopy(&tmp,im);
+
+
+  /*   cvNamedWindow("Server", CV_WINDOW_AUTOSIZE);
+
+             cvNamedWindow("Server", CV_WINDOW_AUTOSIZE);
+             cvShowImage("Server",im);
+ //            cv::imshow("Server",img);
+             cvWaitKey(3500);
+
+             cvDestroyWindow("Server");*/
+
 
 
      return im;
-
-/*
-
-    QByteArray Data = sock->readAll();
-
-      /* CvSize size;
-       size.height = 480;
-       size.width = 640;
-       IplImage *frame = cvCreateImageHeader(size, IPL_DEPTH_8U, 3);*/
-
-
-   //    frame->imageData = Data.data();
-
 }
-/*
-void seveur::sender(/*auto msg*//*)
-{
-    char* msg="je m'en vers";
-    write(this->sock, msg, strlen(msg));
-}*/
 
 uid_t server::get_id(char* user)
 {/*
     struct passwd *userStruct;
+
     userStruct = getpwnam(user);
+
+    if(userStruct==NULL)
+    {
+        std::cout<<"Invalid user"<<std::endl;
+        exit(0);
+    }
+
     uid_t userID=userStruct->pw_uid;
+
     return userID;*/
 }
-
-void server::viderBuffer() {
-    int c = 0;
-    while (c != '\n' && c != EOF)
-        {
-                c = getchar();
-         }
- }
 
 
 void server::lire()
@@ -200,13 +238,11 @@ void server::lire()
 
     this->receive_int(&n);
 
+//    n--;
+
 //    std::cout<<n<<std::endl;
 
-    char recvBuff[n+1];
-
-    memset(recvBuff, 0 ,sizeof(recvBuff));
-
-    this->lu=(char*)std::realloc(this->lu,(n*sizeof(char))+1);
+    this->lu=(char*)std::realloc(this->lu,(n*sizeof(char)));
 
     if(this->lu==NULL)
     {
@@ -215,19 +251,27 @@ void server::lire()
     }
 
 
-    int a=0;
-    recvBuff[0]='\0';
+  //  int a=0;
+ //   recvBuff[0]='\0';
     this->lu[0]='\0';
-    /*while((n= read(this->sock, recvBuff, sizeof(recvBuff)-1)) > 0) {
-            recvBuff[n]='\0';    // explicit null termination: updated based on comments
-            std::strcat(this->lu,recvBuff) ;
-            recvBuff[0]='\0';        // clear the buffer : I am 99% sure this is not needed now
-    a=a+n;
-    }*/
+/*
+    if(n<10)
+    {
+        while((n= read(this->sock, this->lu, sizeof(this->lu))) > 0) {
+               //     recvBuff[n]='\0';    // explicit null termination: updated based on comments
+               //     std::strcat(this->lu,recvBuff) ;
+                 //   recvBuff[0]='\0';        // clear the buffer : I am 99% sure this is not needed now
+            //a=a+n;
+            }
+    }else
+    {*/
+    int a=this->readLine(this->lu,n);
 
-   // recvBuff[a]='\0';
-this->readLine(this->lu,n);
-      if( n < 0)
+    this->lu[n]='\0';
+ //   }
+
+
+      if( a < 0)
       {
         printf("\n Read Error \n");
       }
@@ -236,23 +280,8 @@ this->readLine(this->lu,n);
 
 }
 
-
-
-char* server::charReader()
-{
-    char* recv;
-    return recv;
-}
-
-/*IplImage server::MatToIplImage(/*Mate img)
-{
-
-}
-*/
-
-
 int server::send_int(int num)
-{
+{/*
     int32_t conv = htonl(num);
     char *data = (char*)&conv;
     int left = sizeof(conv);
@@ -272,19 +301,26 @@ int server::send_int(int num)
             left -= rc;
         }
     }
-    while (left > 0);
+    while (left > 0);*/
+
+    char buf[10] = "";
+
+    sprintf( buf , "%d" , num );
+
+    send( this->sock , buf , sizeof buf , 0 );
+
     return 0;
 }
 
-
-
 int server::receive_int(int *num)
-{
+{/*
     int32_t ret;
     char *data = (char*)&ret;
+    data[0]='\0';
     int left = sizeof(ret);
     int rc;
     do {
+        //rc=this->readLine(data, left);
         rc = read(this->sock, data, left);
    //     std::cout<<"sent"<<std::endl;
 
@@ -303,11 +339,17 @@ int server::receive_int(int *num)
     }
     while (left > 0);
     *num = ntohl(ret);
+    data[0]='\0';*/
+
+    char buf[10] = "";
+
+    recv( sock , buf , sizeof buf , 0 );
+
+    sscanf( buf , "%d" , num );
+
+
     return 0;
 }
-
-
-
 
 int server::readLine(char data[],int maxlen)
 {
@@ -329,4 +371,5 @@ int server::readLine(char data[],int maxlen)
       data[len++] = c;
    }
 }
+
 
