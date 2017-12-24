@@ -16,59 +16,32 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
-
+using namespace std;
 
 class server
 {
 public:
-    server(/*void (*communicator)(int)*/);
+    server(void (*communicator)(server));
     void communicator();
-//    IplImage MatToIplImage(/*Mat im*/);
-    void lire();
-    void envoie(std::string msg);
-
+    char* lire();
+    int receive_int(int *num);
+    int send_int(int num);
+    int stringsender(char[]);
+    IplImage *IplImageRecv();
 
 
 private:
         const struct sockaddr_in* addr;
         int sock;
   //      void sender(/*auto*/);
-        char* charReader();
-        IplImage *IplImageRecv();
         int analyse(uid_t id, IplImage* im);
         uid_t get_id(char* user);
-       /* char sendBuff[1025];
-        char recvBuff[1024];*/
         void viderBuffer();
-        int receive_int(int *num);
-        int send_int(int num);
-        int stringsender(char[]);
-        char* lu=NULL;
 
+        char* lu=NULL;
         int readLine(char data[],int maxlen);
 
-/*
-
-
-
-        QTcpServer *serveur;
-        QList<QTcpSocket *> clients;
-        quint16 tailleMessage;
-        std::string etat;
-
-*/
 
 };
 
-//#endif  SEVEUR_H
-
-
-/*
-
-class server
-{
-public:
-    server();
-};
-*/
 #endif  SERVER_H
