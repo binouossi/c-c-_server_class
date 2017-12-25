@@ -22,12 +22,12 @@ class server
 {
 public:
     server(void (*communicator)(server));
-    void communicator();
     char* lire();
     int receive_int(int *num);
     int send_int(int num);
     int stringsender(char[]);
     IplImage *IplImageRecv();
+    int IplImagesender(IplImage* im);
 
 
 private:
