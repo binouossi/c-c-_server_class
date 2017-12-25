@@ -29,19 +29,14 @@ public:
     IplImage *IplImageRecv();
     int IplImagesender(IplImage* im);
 
-
 private:
         const struct sockaddr_in* addr;
         int sock;
-  //      void sender(/*auto*/);
         int analyse(uid_t id, IplImage* im);
         uid_t get_id(char* user);
         void viderBuffer();
-
         char* lu=NULL;
         int readLine(char data[],int maxlen);
-
-
 };
 
 #endif  SERVER_H
