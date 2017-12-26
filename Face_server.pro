@@ -11,7 +11,7 @@ CONFIG += qt
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    server.cpp
+    src/server.cpp \
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -25,22 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 HEADERS += \
-    server.h
+    include/server.h
 
-
+INCLUDEPATH += include/
 INCLUDEPATH += /usr/include/opencv2
-#LIBS += -L/usr/lib
 LIBS += -lopencv_core
-#LIBS += -lopencv_imgproc
 LIBS += -lopencv_highgui
-#LIBS += -lopencv_ml
-#LIBS += -lopencv_video
-#LIBS += -lopencv_features2d
-#LIBS += -lopencv_calib3d
-#LIBS += -lopencv_objdetect
-#LIBS += -lopencv_contrib
-#LIBS += -lopencv_legacy
-#LIBS += -lopencv_flann
-#LIBS += -lX11
-#LIBS += -lXext
 
