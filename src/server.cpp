@@ -77,6 +77,9 @@ IplImage* server::IplImageRecv()
     this->receive_int(&H);
     this->receive_int(&W);
 
+/*    this->receive_int(H);
+    this->receive_int(W);*/
+
 
 //    std::cout<<H<<" et "<<H<<std::endl;
 
@@ -145,6 +148,7 @@ char* server::lire()
 
     int n = NULL;
     this->receive_int(&n);
+//    this->receive_int(n);
 
     if(n==0||n==NULL)
     {
@@ -176,24 +180,29 @@ char* server::lire()
 }
 
 int server::send_int(int num)
-{
+{/*
     char buf[10] = "";
 
     sprintf( buf , "%d" , num );
 
-    send( this->sock , buf , sizeof buf , 0 );
+    send( this->sock , buf , sizeof buf , 0 );*/
+
+    send(this->sock, &num, sizeof(int), 0);
+
 
     return 0;
 }
 
-int server::receive_int(int *num)
-{
+int server::receive_int(int* num)
+{/*
     char buf[10] = "";
 
     recv( sock , buf , sizeof buf , 0 );
 
-    sscanf( buf , "%d" , num );
+    sscanf( buf , "%d" , num );*/
 
+
+    recv(this->sock, num, sizeof(int), NULL);
 
     return 0;
 }
