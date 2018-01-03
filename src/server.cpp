@@ -36,7 +36,8 @@ server::server(void (communicator)(server))
           sigflag = 0;
           int childpid;
           // accept awaiting request
-          if(this->sock = accept(listenfd, (struct sockaddr*)NULL ,NULL)<0)
+          this->sock = accept(listenfd, (struct sockaddr*)NULL ,NULL);
+          if(this->sock<0)
           {
               if(sigflag == 1)continue;
               perror("accept error in Face_serverd");
@@ -180,29 +181,29 @@ char* server::lire()
 }
 
 int server::send_int(int num)
-{/*
+{
     char buf[10] = "";
 
     sprintf( buf , "%d" , num );
 
-    send( this->sock , buf , sizeof buf , 0 );*/
+    send( this->sock , buf , sizeof buf , 0 );
 
-    send(this->sock, &num, sizeof(int), 0);
+//    send(this->sock, &num, sizeof(int), 0);
 
 
     return 0;
 }
 
 int server::receive_int(int* num)
-{/*
+{
     char buf[10] = "";
 
     recv( sock , buf , sizeof buf , 0 );
 
-    sscanf( buf , "%d" , num );*/
+    sscanf( buf , "%d" , num );
 
 
-    recv(this->sock, num, sizeof(int), NULL);
+//    recv(this->sock, num, sizeof(int), NULL);
 
     return 0;
 }
