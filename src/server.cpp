@@ -59,6 +59,208 @@ server::server(void (communicator)(server))
        }
 }
 
+
+
+char* server::str_reader()
+{
+
+    int n = NULL;
+    this->int_reader(&n);
+
+    if(n==0||n==NULL)
+    {
+        return NULL;
+    }
+
+//    std::cout<<n<<std::endl;
+    char lu[n];
+
+//    lu=(char*)std::realloc(lu,(n*sizeof(char)));
+
+    if(lu==NULL)
+    {
+        fprintf(OUTPUT,"Allocation error" , strerror(errno));
+
+        return NULL;
+    }
+
+    lu[0]='\0';
+
+//    int a=this->readLine(lu,n);
+
+    int a=recv(this->sock,lu,n,0);
+
+      if( a < n-1)
+      {
+          fprintf(OUTPUT,"Read Error" , strerror(errno));
+
+        return NULL;
+      }
+
+      lu[n]='\0';
+      return lu;
+}
+
+char* server::str_reader(int n)
+{
+
+    char* lu=NULL;
+
+    if(n==0||n==NULL)
+    {
+        return NULL;
+    }
+
+    lu=(char*)std::realloc(lu,(n*sizeof(char)));
+
+    if(lu==NULL)
+    {
+        fprintf(OUTPUT,"Allocation error" , strerror(errno));
+
+        return NULL;
+    }
+
+    lu[0]='\0';
+
+//    int a=this->readLine(lu,n);
+
+    int a=recv(this->sock,lu,n,0);
+
+
+      if( a < n-1)
+      {
+
+          fprintf(OUTPUT,"Read Error" , strerror(errno));
+
+        return NULL;
+      }
+
+      lu[n]='\0';
+      return lu;
+}
+
+int server::str_sender(char* fi)
+{
+
+    int a=strlen(fi);
+
+    this->int_sender(strlen(fi));
+
+    int n=send(this->sock,fi,a,0);
+
+    if(n<0)
+        perror("Error while sending");
+    return n;
+}
+
+int server::str_sender(char* fi,int size)
+{
+    this->int_sender(size);
+
+    int n=send( this->sock , fi , size, 0 );
+
+    if(n<0)
+        perror("Error while sending");
+    return n;
+}
+
+int server::int_reader(int* num)
+{
+    char buf[10] = "";
+
+    int rest=recv( this->sock , buf , sizeof buf , 0 );
+
+    sscanf( buf , "%d" , num );
+
+    return rest;
+}
+
+int server::int_sender(int num)
+{
+    char buf[10] = "";
+
+    sprintf( buf , "%d" , num );
+
+    int rest=send( this->sock , buf , sizeof buf , 0 );
+
+    return rest;
+}
+
+int server::file_sender(char* path)
+{
+
+    fstream file(path);
+
+        stringstream hi;
+    if(file.is_open())
+    {
+
+        hi<<file.rdbuf();
+
+        file.close();
+    }
+    else
+        return -2;
+string kol=hi.str();
+
+char* bi=const_cast<char*>(kol.c_str());
+
+    if(this->str_sender(bi)<0)
+        return -1;
+
+     return 0;
+}
+
+bool server::file_reader(char* destination)
+{
+
+    char*gi=this->getall();
+
+    ofstream file(destination);
+
+    if(!file.is_open())
+    {
+        return false;
+    }
+
+    file<<gi;
+
+    return true;
+
+}
+
+char* server::getall()
+{
+    int size=NULL;
+
+    this->int_reader(&size);
+
+    if(size<=0)
+    {
+        return NULL;
+    }
+
+    char* data= this->str_reader(size);
+
+    return data;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
 int server::stringsender(char fi[])
 {
     int a=strlen(fi);
@@ -72,77 +274,6 @@ int server::stringsender(char fi[])
     return n;
 }
 
-IplImage* server::IplImageRecv()
-{
-    int H=NULL,W=NULL;
-    this->receive_int(&H);
-    this->receive_int(&W);
-
-/*    this->receive_int(H);
-    this->receive_int(W);*/
-
-
-//    std::cout<<H<<" et "<<H<<std::endl;
-
-
-    if(W==0||W==NULL)
-        W=IMAGE_WIDTH;
-
-    if(H==0||H==NULL)
-      H=IMAGE_HEIGHT;
-
-    cv::Mat  img = cv::Mat::zeros(H,W, CV_8UC3);
-
-       int  imgSize = img.total()*img.elemSize();
-       uchar sockData[imgSize];
-
-      //Receive data here
-       int bytes=0;
-
-       for (int i = 0; i < imgSize; i = i + bytes) {
-       if ((bytes = recv(this->sock, sockData +i, imgSize  - i, 0)) == -1)
-       {
-           perror("Image reception failed");
-           return NULL;
-        }
-       }
-
-     int ptr=0;
-     for (int i = 0;  i < img.rows; i++)
-     {
-      for (int j = 0; j < img.cols; j++)
-      {
-       img.at<cv::Vec3b>(i,j) = cv::Vec3b(sockData[ptr+ 0],sockData[ptr+1],sockData[ptr+2]);
-       ptr=ptr+3;
-      }
-     }
-
-     IplImage* im= cvCreateImage(cvSize(img.cols, img.rows), 8, 3);
-
-     IplImage tmp=img;
-
-     cvCopy(&tmp,im);
-
-     return im;
-}
-
-int server::IplImagesender(IplImage* im)
-{
-    this->send_int(im->height);
-
-    this->send_int(im->width);
-
-    int bytes=0;
-    cv::Mat frame=cv::Mat(im,true);
-    frame = (frame.reshape(0,1)); // to make it continuous
-
-    int  imgSize = frame.total()*frame.elemSize();
-
-    // Send data here
-    bytes = send(this->sock, frame.data, imgSize, 0);
-
-    return bytes;
-}
 
 char* server::lire()
 {
@@ -228,3 +359,4 @@ int server::readLine(char data[],int maxlen)
       data[len++] = c;
    }
 }
+*/

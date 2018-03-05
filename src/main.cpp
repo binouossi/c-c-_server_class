@@ -1,23 +1,35 @@
 #include <stdio.h>
 #include <iostream>
-#include <server.h>
+#include <../include/server.h>
 
 using namespace std;
 
 void A(server lo){
-    for(int i=0;i<25;i++)
-    {
-        char* hi=lo.lire();
-        cout<<hi<<endl;
-        lo.stringsender("oui! Bonjour toi. Comment va tu?");
-        printf("bonjour\n");
-        lo.send_int(5);
-        int gi=NULL;
-        lo.receive_int(&gi);
-//        lo.receive_int(gi);
-        cout<<gi<<endl;
-        cout<<"Fin"<<endl;
-    }
+
+    char* msg=lo.getall();
+
+    cout<<msg<<endl;
+
+    msg="Oui! Moi aussi.";
+
+    lo<<msg;
+
+    double hi;
+
+    lo>>hi;
+
+    cout<<hi<<endl;
+
+    hi=9.6548;
+
+    lo<<hi;
+
+    cout<<hi<<endl;
+
+    lo.file_sender("/home/cani/cdadd");
+    lo.file_reader("/home/cani/test02");
+
+    printf("fin\n");
 
     exit(0);
 }

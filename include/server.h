@@ -2,19 +2,19 @@
 #define SERVER_H
 
 //a supprimer pour eviter les redefinition
-#define IMAGE_SIZE 230400
-#define IMAGE_WIDTH 320
-#define IMAGE_HEIGHT 240
+
+#define ADDR
+#define OUTPUT stderr
 #define PORT 5000
 
 // labrary
-
+#include <unistd.h>
+#include <string.h>
+#include <sstream>
+#include <fstream>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <wait.h>
-
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 
 using namespace std;
 
@@ -22,21 +22,83 @@ class server
 {
 public:
     server(void (*communicator)(server));
-    char* lire();
-    int receive_int(int *num);
-    int send_int(int num);
-    int stringsender(char[]);
-    IplImage *IplImageRecv();
-    int IplImagesender(IplImage* im);
 
-private:
+    char* getall();
+
+    int file_sender(char* path);
+
+    bool file_reader(char* destination);
+
+    template <typename Type>
+    stringstream& operator>> (Type& don);
+
+    template <typename Type>
+    bool operator<<(Type &data);
+
+protected:
+
+
+    char* str_reader();
+
+    char* str_reader(int size);
+
+    int int_reader(int *num);
+
+    int int_sender(int num);
+
+    int str_sender(char *fi);
+
+    int str_sender(char* fi, int size);
+
+
+
+
         const struct sockaddr_in* addr;
         int sock;
-        int analyse(uid_t id, IplImage* im);
-        uid_t get_id(char* user);
-        void viderBuffer();
-        char* lu=NULL;
-        int readLine(char data[],int maxlen);
+
 };
+
+
+
+template <typename Type>
+stringstream& server::operator>> (Type& don)
+{
+    int size=NULL;
+
+    stringstream nin;
+
+    nin.flush();
+
+    this->int_reader(&size);
+
+    char* data= this->str_reader(size);
+
+    nin<<data;
+
+    nin>>don;
+
+    return nin;
+}
+
+template <typename Type>
+bool server::operator<<(Type &data)
+{
+    stringstream nout;
+
+    nout<<data;
+
+    char* buf=const_cast<char*>(nout.str().c_str());
+
+    int size=strlen(buf);
+
+    if(this->str_sender(buf,size)<0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 
 #endif  SERVER_H
