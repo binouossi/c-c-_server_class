@@ -1,7 +1,7 @@
 # c/c++ socket server class
 
 ## Author
-**NAME: _TACOLODJOU Emmanuel_** 
+**NAME: _TACOLODJOU Emmanuel_**  
 **Email: _tacolodjounini@gmail.com_**
 
 ## Presentation
